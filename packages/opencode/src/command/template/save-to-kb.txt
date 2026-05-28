@@ -1,0 +1,36 @@
+Capture the key insight from this conversation as a new markdown file in the user's personal KB.
+
+KB root: `${kbPath}`
+
+Subdirectories (pick the one that best matches the topic):
+- `me/` — personal info, preferences, history, identity
+- `contacts/` — people the user knows (personas, orgs, relationships)
+- `projects/` — ongoing work and project-specific notes
+- `research/` — investigative notes, technical deep-dives
+- `sops/` — standard operating procedures, runbooks
+- `life/` — personal life context
+- `inbox-analysis/` — email thread analyses
+- `goals/` — long-term goals and outcomes
+
+Steps:
+
+1. Decide whether anything in this conversation is genuinely worth saving. If not, say "nothing to save" and stop. Don't manufacture content.
+
+2. Pick the right subdirectory.
+
+3. Choose a short kebab-case filename ending in `.md`. Avoid generic names like `notes.md` — be specific about the topic.
+
+4. Write the file using the Write tool. Structure:
+
+   ```markdown
+   # <Clear H1 title>
+
+   <2-4 paragraphs of substance. Lead with the insight or fact. Include enough context that this file is useful in isolation, six months from now.>
+
+   ---
+   _Captured: <today's date in YYYY-MM-DD>_
+   ```
+
+5. Tell the user the path you wrote to, and one line about why you chose that location.
+
+Be terse. Don't dilute the insight with filler.
