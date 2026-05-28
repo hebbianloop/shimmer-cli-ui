@@ -20,16 +20,16 @@ import { promises as fs } from "node:fs"
 import { homedir } from "node:os"
 import { join } from "node:path"
 
-const MEMORY_ROOT = process.env.SHIMMER_MEMORY_ROOT ?? join(homedir(), ".shimmer-cli", "projects")
-const INDEX_FILENAME = "MEMORY.md"
+export const MEMORY_ROOT = process.env.SHIMMER_MEMORY_ROOT ?? join(homedir(), ".shimmer-cli", "projects")
+export const INDEX_FILENAME = "MEMORY.md"
 const INDEX_TRUNCATE_LINES = 200
 
-function projectKey(directory: string): string {
+export function projectKey(directory: string): string {
   // Mirror Claude Code's slashified-path convention: /Users/shady → -Users-shady.
   return directory.replace(/[\\/]+/g, "-")
 }
 
-function memoryDir(directory: string): string {
+export function memoryDir(directory: string): string {
   return join(MEMORY_ROOT, projectKey(directory), "memory")
 }
 

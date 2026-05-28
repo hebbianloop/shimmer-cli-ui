@@ -1,0 +1,33 @@
+Bootstrap the typed auto-memory system for this project.
+
+Memory directory: `${memoryDir}`
+Index file: `${memoryDir}/MEMORY.md`
+
+Do exactly this:
+
+1. Create the memory directory if it doesn't exist.
+2. If `${memoryDir}/MEMORY.md` already exists, stop and report "memory already initialized" — do not overwrite.
+3. Otherwise create an empty `MEMORY.md` with just this header comment:
+
+   ```
+   <!-- Index of typed memories. One line per memory:
+        - [Title](file.md) — short hook (what this memory captures) -->
+   ```
+
+4. If the conversation so far reveals something memorable about the user (preferences, role, working style), also write a single starter memory as `user.md` with frontmatter:
+
+   ```
+   ---
+   name: user-profile
+   description: <one-line summary>
+   metadata:
+     type: user
+   ---
+   <body>
+   ```
+
+   And add a one-line pointer to `MEMORY.md`.
+
+5. Tell the user: "Memory initialized. Future sessions in this project will load `MEMORY.md` and the writing-guide into the system prompt automatically."
+
+Be terse. Do not save anything you're not confident about.
