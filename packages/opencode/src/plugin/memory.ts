@@ -86,9 +86,11 @@ export const MemoryPlugin: Plugin = async (input) => {
 
   return {
     "experimental.chat.system.transform": async (_inp, output) => {
-      // Lazy-create the directory on first session so subsequent Writes succeed.
-      await fs.mkdir(dir, { recursive: true }).catch(() => {})
+      // No-op until the user bootstraps by creating MEMORY.md. This keeps
+      // ephemeral test cwds (and fresh installs) from mutating the system
+      // prompt — which would otherwise break recorded-fixture LLM tests.
       const index = await readIndex(dir)
+      if (!index) return
       const section = buildSystemSection(dir, index)
       if (process.env.SHIMMER_MEMORY_DEBUG === "1") {
         // eslint-disable-next-line no-console
