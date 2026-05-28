@@ -9,6 +9,8 @@ import { MCP } from "../mcp"
 import { Skill } from "../skill"
 import PROMPT_INITIALIZE from "./template/initialize.txt"
 import PROMPT_REVIEW from "./template/review.txt"
+import PROMPT_MEMORY_INIT from "./template/memory-init.txt"
+import { memoryDir as resolveMemoryDir } from "../plugin/memory"
 
 type State = {
   commands: Record<string, Info>
@@ -53,6 +55,7 @@ export function hints(template: string) {
 export const Default = {
   INIT: "init",
   REVIEW: "review",
+  MEMORY_INIT: "memory-init",
 } as const
 
 export interface Interface {
@@ -92,6 +95,15 @@ export const layer = Layer.effect(
         },
         subtask: true,
         hints: hints(PROMPT_REVIEW),
+      }
+      commands[Default.MEMORY_INIT] = {
+        name: Default.MEMORY_INIT,
+        description: "bootstrap the typed auto-memory system for this project",
+        source: "command",
+        get template() {
+          return PROMPT_MEMORY_INIT.replace("${memoryDir}", resolveMemoryDir(ctx.worktree))
+        },
+        hints: hints(PROMPT_MEMORY_INIT),
       }
 
       for (const [name, command] of Object.entries(cfg.command ?? {})) {
