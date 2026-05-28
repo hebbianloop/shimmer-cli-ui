@@ -10,7 +10,12 @@ import { Skill } from "../skill"
 import PROMPT_INITIALIZE from "./template/initialize.txt"
 import PROMPT_REVIEW from "./template/review.txt"
 import PROMPT_MEMORY_INIT from "./template/memory-init.txt"
+import PROMPT_SAVE_TO_KB from "./template/save-to-kb.txt"
 import { memoryDir as resolveMemoryDir } from "../plugin/memory"
+import { homedir } from "node:os"
+import { join } from "node:path"
+
+const KB_PATH = process.env.SHIMMER_KB_PATH ?? join(homedir(), "shimmer-kb")
 
 type State = {
   commands: Record<string, Info>
@@ -56,6 +61,7 @@ export const Default = {
   INIT: "init",
   REVIEW: "review",
   MEMORY_INIT: "memory-init",
+  SAVE_TO_KB: "save-to-kb",
 } as const
 
 export interface Interface {
@@ -104,6 +110,15 @@ export const layer = Layer.effect(
           return PROMPT_MEMORY_INIT.replace("${memoryDir}", resolveMemoryDir(ctx.worktree))
         },
         hints: hints(PROMPT_MEMORY_INIT),
+      }
+      commands[Default.SAVE_TO_KB] = {
+        name: Default.SAVE_TO_KB,
+        description: "save the current insight to the personal markdown KB",
+        source: "command",
+        get template() {
+          return PROMPT_SAVE_TO_KB.replace("${kbPath}", KB_PATH)
+        },
+        hints: hints(PROMPT_SAVE_TO_KB),
       }
 
       for (const [name, command] of Object.entries(cfg.command ?? {})) {
