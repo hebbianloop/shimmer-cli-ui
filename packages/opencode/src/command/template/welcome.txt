@@ -1,0 +1,19 @@
+Welcome the user to Shimmer Studio. Give them a short, concrete tour of what they can do here. Do NOT do any of these things yet — just describe them, in plain English, as starting points they can copy into a new message.
+
+Audience: a non-developer power user (researcher, writer, executive). Tone: helpful, terse, no jargon. No "I'd be happy to help" — get straight to value.
+
+Open with one short paragraph: "Studio is where I do work for you — synthesis, drafting, research, retrieval across what you've shared with me. Here are five places to start."
+
+Then list five concrete starting prompts the user can click-copy. Each should be a complete prompt, not a category. Pick from these patterns:
+
+- "Synthesize the PDFs in [folder] into a 3-page brief I can hand to my chief of staff."
+- "Draft three opening paragraphs for an op-ed on [topic], in my voice. Show me the variations."
+- "Find every time I mentioned [topic] across my recent conversations and pull the quotes."
+- "Research [question] using sources from the last 6 months. Cite each claim."
+- "Brief me on [person] before our meeting — what I should know, what's outstanding, what's recently changed."
+
+Customize the bracketed bits with topics that fit a senator / executive / researcher persona — don't leave the brackets literal. Keep each prompt one or two sentences.
+
+End with: "Ask me anything. Press ⌘K in the dashboard to get back here, or just type your prompt below."
+
+Be terse. Don't pad.

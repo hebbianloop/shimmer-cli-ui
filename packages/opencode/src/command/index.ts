@@ -11,6 +11,7 @@ import PROMPT_INITIALIZE from "./template/initialize.txt"
 import PROMPT_REVIEW from "./template/review.txt"
 import PROMPT_MEMORY_INIT from "./template/memory-init.txt"
 import PROMPT_SAVE_TO_KB from "./template/save-to-kb.txt"
+import PROMPT_WELCOME from "./template/welcome.txt"
 import { memoryDir as resolveMemoryDir } from "../plugin/memory"
 import { homedir } from "node:os"
 import { join } from "node:path"
@@ -62,6 +63,7 @@ export const Default = {
   REVIEW: "review",
   MEMORY_INIT: "memory-init",
   SAVE_TO_KB: "save-to-kb",
+  WELCOME: "welcome",
 } as const
 
 export interface Interface {
@@ -119,6 +121,15 @@ export const layer = Layer.effect(
           return PROMPT_SAVE_TO_KB.replace("${kbPath}", KB_PATH)
         },
         hints: hints(PROMPT_SAVE_TO_KB),
+      }
+      commands[Default.WELCOME] = {
+        name: Default.WELCOME,
+        description: "tour of what Shimmer can do, with starter prompts you can copy",
+        source: "command",
+        get template() {
+          return PROMPT_WELCOME
+        },
+        hints: hints(PROMPT_WELCOME),
       }
 
       for (const [name, command] of Object.entries(cfg.command ?? {})) {
