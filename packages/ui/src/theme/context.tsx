@@ -168,12 +168,15 @@ export const { use: useTheme, provider: ThemeProvider } = createSimpleContext({
   name: "Theme",
   init: (props: { defaultTheme?: string; onThemeApplied?: (theme: DesktopTheme, mode: "light" | "dark") => void }) => {
     // Embed mode: when Studio is iframed in the shimmer-saas dashboard,
-    // force colorScheme to "system" and ignore any persisted localStorage
-    // value. Keeps the iframe visually continuous with the parent dashboard
-    // (which also follows OS pref) even if the user previously picked a
-    // light/dark override during a standalone Studio session.
+    // force the shimmer theme + follow OS pref, ignoring any persisted
+    // localStorage values. Keeps the iframe visually continuous with the
+    // parent dashboard (same brand palette, same light/dark behavior) even
+    // if the user previously picked a different theme/scheme during a
+    // standalone Studio session.
     const isEmbed = typeof window === "object" && window.top !== window.self
-    const themeId = normalize(read(STORAGE_KEYS.THEME_ID) ?? props.defaultTheme) ?? "oc-2"
+    const themeId = isEmbed
+      ? "shimmer"
+      : (normalize(read(STORAGE_KEYS.THEME_ID) ?? props.defaultTheme) ?? "oc-2")
     const colorScheme: ColorScheme = isEmbed
       ? "system"
       : ((read(STORAGE_KEYS.COLOR_SCHEME) as ColorScheme | null) ?? "system")
@@ -231,6 +234,9 @@ export const { use: useTheme, provider: ThemeProvider } = createSimpleContext({
 
     const onStorage = (e: StorageEvent) => {
       if (e.key === STORAGE_KEYS.THEME_ID && e.newValue) {
+        // In embed mode, ignore theme changes from other tabs so a
+        // standalone Studio toggle can't drift the iframe off-brand.
+        if (isEmbed) return
         const next = normalize(e.newValue)
         if (!next) return
         if (next !== "oc-2" && !knownThemes().has(next) && !store.themes[next]) return
@@ -264,7 +270,11 @@ export const { use: useTheme, provider: ThemeProvider } = createSimpleContext({
       makeEventListener(mediaQuery, "change", onMedia)
 
       const rawTheme = read(STORAGE_KEYS.THEME_ID)
-      const savedTheme = normalize(rawTheme ?? props.defaultTheme) ?? "oc-2"
+      // In embed mode, ignore any persisted themeId so the iframe always
+      // uses the shimmer theme — matching the parent dashboard's brand.
+      const savedTheme = isEmbed
+        ? "shimmer"
+        : (normalize(rawTheme ?? props.defaultTheme) ?? "oc-2")
       // In embed mode, ignore any persisted colorScheme so the iframe always
       // tracks the OS preference (matching the parent dashboard's behavior).
       const savedScheme: ColorScheme = isEmbed
