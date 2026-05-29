@@ -147,6 +147,28 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
   let slashPopoverRef!: HTMLDivElement
   let projectSearchRef: HTMLInputElement | undefined
 
+  // Starter chips on the empty-session view dispatch `studio:starter` events;
+  // pick them up here, drop the suggested text into the editor, fire the input
+  // handler so internal prompt state syncs, and focus.
+  createEffect(() => {
+    if (typeof window === "undefined") return
+    const onStarter = (e: Event) => {
+      const detail = (e as CustomEvent<{ text: string }>).detail
+      if (!detail?.text || !editorRef) return
+      editorRef.textContent = detail.text
+      editorRef.dispatchEvent(new InputEvent("input", { bubbles: true }))
+      editorRef.focus()
+      const range = document.createRange()
+      range.selectNodeContents(editorRef)
+      range.collapse(false)
+      const selection = window.getSelection()
+      selection?.removeAllRanges()
+      selection?.addRange(range)
+    }
+    window.addEventListener("studio:starter", onStarter as EventListener)
+    onCleanup(() => window.removeEventListener("studio:starter", onStarter as EventListener))
+  })
+
   const mirror = { input: false }
   const inset = 56
   const space = `${inset}px`
