@@ -127,9 +127,14 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
   // Embed mode (?embed=1, set by the shimmer-saas dashboard iframe wrapper):
   // hide the project switcher trigger + "Add project" plus button. Embed
   // users land on a single auto-opened workspace (see home.tsx + layout.tsx)
-  // and shouldn't see project-management chrome.
+  // and shouldn't see project-management chrome. Honors both ?embed=1
+  // and the iframe-sniff so the gate stays true through internal nav
+  // that drops the query param (mirrors PR #16 + #20).
   const location = useLocation()
-  const isEmbed = createMemo(() => new URLSearchParams(location.search).get("embed") === "1")
+  const inIframe = typeof window !== "undefined" && window.top !== window.self
+  const isEmbed = createMemo(
+    () => inIframe || new URLSearchParams(location.search).get("embed") === "1",
+  )
   const queryOptions = useQueryOptions()
 
   const sync = useSync()
@@ -1610,7 +1615,14 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
                   <Show when={newSession() && !selectedProject() && !isEmbed()}>
                     <ComposerPickerTrigger state={newProjectTriggerState()} />
                   </Show>
-                  <ComposerModelControl state={modelControlState()} />
+                  {/* Hide the model picker in embed mode: the host product
+                      (shimmer-saas) owns provider choice via the baked
+                      opencode.jsonc, and exposing the full OpenRouter
+                      catalog lets users pick non-tool-supporting models
+                      (e.g. Nano Banana Pro) that break bash + other tools. */}
+                  <Show when={!isEmbed()}>
+                    <ComposerModelControl state={modelControlState()} />
+                  </Show>
                 </div>
                 <Tooltip placement="top" inactive={!working() && blank()} value={tip()}>
                   <IconButton
@@ -1854,7 +1866,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
                         </TooltipKeybind>
                       </div>
                     </Show>
-                    <Show when={!providersLoading()}>
+                    <Show when={!providersLoading() && !isEmbed()}>
                       <Show when={store.mode !== "shell"}>
                         <div
                           data-component="prompt-model-control"
