@@ -2377,6 +2377,7 @@ export default function Layout(props: ParentProps) {
               {props.children}
             </Show>
           </main>
+          <EmbedFooter />
           <Toast.Region />
         </div>
       }
@@ -2555,6 +2556,34 @@ export default function Layout(props: ParentProps) {
       </div>
     </Show>
     </Show>
+  )
+}
+
+// Footer rendered only in embed mode (?embed=1). Provides the wordmark as a
+// home affordance — clicking breaks out of the iframe (target=_top) and
+// navigates to the dashboard host. Derived from the current hostname by
+// stripping the "-studio" suffix; falls back gracefully on non-prod hosts.
+function EmbedFooter() {
+  const homeHref = () => {
+    if (typeof window === "undefined") return "/"
+    const host = window.location.hostname
+    if (host.endsWith("-studio.shimmer.fyi")) {
+      const dashboardHost = host.replace(/-studio\.shimmer\.fyi$/, ".shimmer.fyi")
+      return `https://${dashboardHost}/`
+    }
+    return "/"
+  }
+  return (
+    <footer class="flex items-center justify-center border-t border-v2-border-border-subtle bg-v2-background-bg-deep px-4 py-2">
+      <a
+        href={homeHref()}
+        target="_top"
+        class="font-display text-[13px] tracking-[-0.02em] text-v2-text-text-secondary transition-colors hover:text-v2-text-text-primary"
+        aria-label="Back to dashboard home"
+      >
+        shimmer
+      </a>
+    </footer>
   )
 }
 
