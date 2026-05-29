@@ -1,7 +1,8 @@
 import type { Session } from "@opencode-ai/sdk/v2/client"
-import { createMemo, createSignal, For, Match, Show, Switch } from "solid-js"
+import { createEffect, createMemo, createSignal, For, Match, Show, Switch } from "solid-js"
 import { createStore } from "solid-js/store"
 import { useQuery } from "@tanstack/solid-query"
+import { useLocation } from "@solidjs/router"
 import { Button } from "@opencode-ai/ui/button"
 import { Logo } from "@opencode-ai/ui/logo"
 import { Spinner } from "@opencode-ai/ui/spinner"
@@ -69,7 +70,21 @@ function HomeDesign() {
   const server = useServer()
   const language = useLanguage()
   const notification = useNotification()
+  const location = useLocation()
   const [state, setState] = createStore({ search: "", project: undefined as string | undefined })
+
+  // Embed mode (?embed=1, set by the dashboard iframe wrapper): the user is a
+  // non-developer accessing the studio through the dashboard — they don't have
+  // a "project". Auto-open a default workspace and navigate straight to the
+  // session view so they never see the "Open project" picker.
+  const isEmbed = createMemo(() => new URLSearchParams(location.search).get("embed") === "1")
+  const EMBED_WORKSPACE = "/workspace"
+  createEffect(() => {
+    if (!isEmbed()) return
+    if (layout.projects.list().some((p) => p.worktree === EMBED_WORKSPACE)) return
+    layout.projects.open(EMBED_WORKSPACE)
+    queueMicrotask(() => navigate(`/${base64Encode(EMBED_WORKSPACE)}/session?embed=1`, { replace: true }))
+  })
 
   const projects = createMemo(() => layout.projects.list())
   const selectedProject = createMemo(() => projects().find((project) => project.worktree === state.project))
