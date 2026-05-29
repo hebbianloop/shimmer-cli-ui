@@ -73,11 +73,13 @@ function HomeDesign() {
   const location = useLocation()
   const [state, setState] = createStore({ search: "", project: undefined as string | undefined })
 
-  // Embed mode (?embed=1, set by the dashboard iframe wrapper): the user is a
-  // non-developer accessing the studio through the dashboard — they don't have
-  // a "project". Auto-open a default workspace and navigate straight to the
-  // session view so they never see the "Open project" picker.
-  const isEmbed = createMemo(() => new URLSearchParams(location.search).get("embed") === "1")
+  // Embed mode: dashboard wrapper iframes us. We're embedded if either the
+  // `?embed=1` query param is present OR window.top !== window.self (iframe
+  // sniff — survives in-app navigations that drop the query string).
+  const inIframe = typeof window !== "undefined" && window.top !== window.self
+  const isEmbed = createMemo(
+    () => inIframe || new URLSearchParams(location.search).get("embed") === "1",
+  )
   const EMBED_WORKSPACE = "/workspace"
   createEffect(() => {
     if (!isEmbed()) return
