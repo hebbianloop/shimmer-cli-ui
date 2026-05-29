@@ -314,8 +314,26 @@ export const { use: useTheme, provider: ThemeProvider } = createSimpleContext({
       return
     }
 
+    // Embed mode (iframed in the shimmer-saas dashboard): force the
+    // shimmer-octarine theme + track the browser's prefers-color-scheme
+    // directly, ignoring any user override stored in localStorage. This
+    // is how Studio stays visually continuous with the parent dashboard
+    // even after a user has played with theme settings in a standalone
+    // studio session.
+    const inIframe = typeof window !== "undefined" && window.top !== window.self
+    const matchDark =
+      typeof window !== "undefined" && typeof window.matchMedia === "function"
+        ? window.matchMedia("(prefers-color-scheme: dark)")
+        : null
     setStore(
       produce((draft) => {
+        if (inIframe) {
+          draft.mode = matchDark?.matches ? "dark" : "light"
+          draft.lock = undefined
+          draft.active = "shimmer-octarine"
+          draft.ready = false
+          return
+        }
         const lock = pick(kv.get("theme_mode_lock"))
         const mode = lock ?? pick(renderer.themeMode) ?? props.mode
         if (!lock && pick(kv.get("theme_mode")) !== undefined) {
@@ -328,6 +346,16 @@ export const { use: useTheme, provider: ThemeProvider } = createSimpleContext({
         draft.ready = false
       }),
     )
+
+    // In embed mode, keep tracking the OS preference live so flipping the
+    // system theme updates Studio without a reload — matches dashboard.
+    if (inIframe && matchDark) {
+      const onChange = (e: MediaQueryListEvent) => {
+        setStore("mode", e.matches ? "dark" : "light")
+      }
+      matchDark.addEventListener("change", onChange)
+      onCleanup(() => matchDark.removeEventListener("change", onChange))
+    }
 
     createEffect(() => {
       const theme = config.theme
