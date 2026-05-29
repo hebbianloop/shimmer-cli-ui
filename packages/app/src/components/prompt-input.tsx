@@ -166,7 +166,21 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
       selection?.addRange(range)
     }
     window.addEventListener("studio:starter", onStarter as EventListener)
-    onCleanup(() => window.removeEventListener("studio:starter", onStarter as EventListener))
+
+    // Cross-origin bridge: the parent dashboard's command palette posts
+    // {type: 'studio:prompt', text} into the iframe to drop a query into the
+    // prompt input. Translate it to the same internal flow as the chip click.
+    const onMessage = (event: MessageEvent) => {
+      const data = event.data as { type?: string; text?: string } | undefined
+      if (!data || data.type !== "studio:prompt" || !data.text) return
+      onStarter(new CustomEvent("studio:starter", { detail: { text: data.text } }) as Event)
+    }
+    window.addEventListener("message", onMessage)
+
+    onCleanup(() => {
+      window.removeEventListener("studio:starter", onStarter as EventListener)
+      window.removeEventListener("message", onMessage)
+    })
   })
 
   const mirror = { input: false }
