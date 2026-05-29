@@ -2362,7 +2362,25 @@ export default function Layout(props: ParentProps) {
     />
   )
 
+  // Embed mode: dashboard parent (shimmer-saas) appends `?embed=1` to the
+  // iframe URL. Drop all outer chrome (titlebar, sidebar, debug bar, toasts)
+  // so the studio slots cleanly under the dashboard tabs without doubled nav.
+  const isEmbed = createMemo(() => new URLSearchParams(location.search).get("embed") === "1")
+
   return (
+    <Show
+      when={!isEmbed()}
+      fallback={
+        <div class="relative bg-background-base flex-1 min-h-0 min-w-0 flex flex-col select-none [&_input]:select-text [&_textarea]:select-text [&_[contenteditable]]:select-text">
+          <main class="flex-1 min-h-0 min-w-0 overflow-x-hidden flex flex-col items-start contain-strict">
+            <Show when={!autoselecting.loading} fallback={<div class="size-full" />}>
+              {props.children}
+            </Show>
+          </main>
+          <Toast.Region />
+        </div>
+      }
+    >
     <Show
       when={!newDesign()}
       fallback={
@@ -2535,6 +2553,7 @@ export default function Layout(props: ParentProps) {
         </div>
         <Toast.Region />
       </div>
+    </Show>
     </Show>
   )
 }
