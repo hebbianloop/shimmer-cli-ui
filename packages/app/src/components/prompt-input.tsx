@@ -31,7 +31,7 @@ import {
   FileAttachmentPart,
 } from "@/context/prompt"
 import { useLayout } from "@/context/layout"
-import { useNavigate } from "@solidjs/router"
+import { useLocation, useNavigate } from "@solidjs/router"
 import { useSDK } from "@/context/sdk"
 import { useServer } from "@/context/server"
 import { useSync } from "@/context/sync"
@@ -124,6 +124,12 @@ const EXAMPLES = [
 export const PromptInput: Component<PromptInputProps> = (props) => {
   const sdk = useSDK()
   const navigate = useNavigate()
+  // Embed mode (?embed=1, set by the shimmer-saas dashboard iframe wrapper):
+  // hide the project switcher trigger + "Add project" plus button. Embed
+  // users land on a single auto-opened workspace (see home.tsx + layout.tsx)
+  // and shouldn't see project-management chrome.
+  const location = useLocation()
+  const isEmbed = createMemo(() => new URLSearchParams(location.search).get("embed") === "1")
   const queryOptions = useQueryOptions()
 
   const sync = useSync()
@@ -1601,7 +1607,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
                   <Show when={showAgentControl()}>
                     <ComposerAgentControl state={agentControlState()} />
                   </Show>
-                  <Show when={newSession() && !selectedProject()}>
+                  <Show when={newSession() && !selectedProject() && !isEmbed()}>
                     <ComposerPickerTrigger state={newProjectTriggerState()} />
                   </Show>
                   <ComposerModelControl state={modelControlState()} />
@@ -1624,7 +1630,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
                 </Tooltip>
               </div>
             </DockShellForm>
-            <Show when={newSession() && selectedProject()}>
+            <Show when={newSession() && selectedProject() && !isEmbed()}>
               <div class="flex h-7 min-w-0 items-center gap-0 px-2">
                 <ComposerPicker state={projectPickerState()} />
               </div>

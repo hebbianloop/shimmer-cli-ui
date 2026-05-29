@@ -1,5 +1,6 @@
 import type { JSX } from "solid-js"
-import { For } from "solid-js"
+import { For, Show, createMemo } from "solid-js"
+import { useLocation } from "@solidjs/router"
 import { WordmarkV2 } from "@opencode-ai/ui/v2/components/wordmark-v2.jsx"
 
 // Starter chips shown on the empty Studio surface — concrete suggestions for
@@ -19,12 +20,20 @@ function fillPrompt(text: string) {
 }
 
 export function NewSessionDesignView(props: { children: JSX.Element }) {
+  // Embed mode (?embed=1, set by the shimmer-saas dashboard iframe wrapper):
+  // hide the opencode wordmark so it doesn't bleed into the host product's
+  // brand. Parent iframe already provides its own identity around us.
+  const location = useLocation()
+  const isEmbed = createMemo(() => new URLSearchParams(location.search).get("embed") === "1")
+
   return (
     <div data-component="session-new-design" class="relative size-full overflow-hidden bg-v2-background-bg-deep">
       <div class="absolute inset-x-0 top-[25.375%] flex justify-center px-6">
         <div class="w-full max-w-[720px]">
-          <WordmarkV2 class="h-auto w-full text-v2-icon-icon-base" />
-          <div class="mt-8">{props.children}</div>
+          <Show when={!isEmbed()}>
+            <WordmarkV2 class="h-auto w-full text-v2-icon-icon-base" />
+          </Show>
+          <div class={isEmbed() ? "mt-0" : "mt-8"}>{props.children}</div>
           <div class="mt-6 flex flex-wrap gap-2 justify-center">
             <For each={STARTERS}>
               {(text) => (
