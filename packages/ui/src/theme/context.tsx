@@ -167,8 +167,16 @@ function cacheThemeVariants(theme: DesktopTheme, themeId: string) {
 export const { use: useTheme, provider: ThemeProvider } = createSimpleContext({
   name: "Theme",
   init: (props: { defaultTheme?: string; onThemeApplied?: (theme: DesktopTheme, mode: "light" | "dark") => void }) => {
+    // Embed mode: when Studio is iframed in the shimmer-saas dashboard,
+    // force colorScheme to "system" and ignore any persisted localStorage
+    // value. Keeps the iframe visually continuous with the parent dashboard
+    // (which also follows OS pref) even if the user previously picked a
+    // light/dark override during a standalone Studio session.
+    const isEmbed = typeof window === "object" && window.top !== window.self
     const themeId = normalize(read(STORAGE_KEYS.THEME_ID) ?? props.defaultTheme) ?? "oc-2"
-    const colorScheme = (read(STORAGE_KEYS.COLOR_SCHEME) as ColorScheme | null) ?? "system"
+    const colorScheme: ColorScheme = isEmbed
+      ? "system"
+      : ((read(STORAGE_KEYS.COLOR_SCHEME) as ColorScheme | null) ?? "system")
     const mode = colorScheme === "system" ? getSystemMode() : colorScheme
     const [store, setStore] = createStore({
       themes: {
@@ -237,6 +245,9 @@ export const { use: useTheme, provider: ThemeProvider } = createSimpleContext({
         })
       }
       if (e.key === STORAGE_KEYS.COLOR_SCHEME && e.newValue) {
+        // In embed mode, ignore color-scheme changes from other tabs so a
+        // standalone Studio toggle can't clobber the iframe's forced OS pref.
+        if (isEmbed) return
         setStore("colorScheme", e.newValue as ColorScheme)
         setStore("mode", e.newValue === "system" ? getSystemMode() : (e.newValue as "light" | "dark"))
       }
@@ -254,7 +265,11 @@ export const { use: useTheme, provider: ThemeProvider } = createSimpleContext({
 
       const rawTheme = read(STORAGE_KEYS.THEME_ID)
       const savedTheme = normalize(rawTheme ?? props.defaultTheme) ?? "oc-2"
-      const savedScheme = (read(STORAGE_KEYS.COLOR_SCHEME) as ColorScheme | null) ?? "system"
+      // In embed mode, ignore any persisted colorScheme so the iframe always
+      // tracks the OS preference (matching the parent dashboard's behavior).
+      const savedScheme: ColorScheme = isEmbed
+        ? "system"
+        : ((read(STORAGE_KEYS.COLOR_SCHEME) as ColorScheme | null) ?? "system")
       if (rawTheme && rawTheme !== savedTheme) {
         write(STORAGE_KEYS.THEME_ID, savedTheme)
         clear()
