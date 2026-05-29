@@ -705,6 +705,12 @@ function LegacyHome() {
   const server = useServer()
   const language = useLanguage()
   const homedir = createMemo(() => sync.data.path.home)
+  // Embed mode: hide the opencode <Logo> watermark so the host's brand
+  // (Shimmer) isn't shadowed. Mirrors HomeDesign's iframe-sniff (PR #16).
+  const inIframe = typeof window !== "undefined" && window.top !== window.self
+  const isEmbed = createMemo(
+    () => inIframe || new URLSearchParams(location.search).get("embed") === "1",
+  )
   const recent = createMemo(() => {
     return sync.data.project
       .slice()
@@ -752,7 +758,12 @@ function LegacyHome() {
 
   return (
     <div class="mx-auto mt-55 w-full md:w-auto px-4">
-      <Logo class="md:w-xl opacity-12" />
+      {/* Opencode wordmark — hidden in embed mode so the host product's
+          brand (Shimmer) isn't shadowed by a giant 'opencode' watermark
+          behind every empty state. */}
+      <Show when={!isEmbed()}>
+        <Logo class="md:w-xl opacity-12" />
+      </Show>
       <Button
         size="large"
         variant="ghost"
