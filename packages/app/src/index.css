@@ -15,6 +15,21 @@
   font-style: normal;
 }
 
+/* Align the web app's body font with the shimmer-saas dashboard stack
+   (`Suisse Intl, Inter, system-ui, sans-serif`). The base sans family
+   from @opencode-ai/ui/styles/theme.css is system-only; Inter is loaded
+   above as a webfont, so put it first in the stack here. Standalone
+   Studio benefits too — embedded or not, body text now matches the
+   parent product without depending on the user having Inter installed.
+
+   Display headers (h1/h2) also pick up a Georgia-first serif so the
+   shimmer voice ("PP Hatton, Georgia, serif") reads consistently
+   across the host's chrome and the Studio embed. */
+:root {
+  --font-family-sans: "Inter", "Suisse Intl", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-family-display: "PP Hatton", Georgia, "Times New Roman", serif;
+}
+
 @layer components {
   @keyframes session-progress-whip {
     0% {
