@@ -2365,7 +2365,16 @@ export default function Layout(props: ParentProps) {
   // Embed mode: dashboard parent (shimmer-saas) appends `?embed=1` to the
   // iframe URL. Drop all outer chrome (titlebar, sidebar, debug bar, toasts)
   // so the studio slots cleanly under the dashboard tabs without doubled nav.
-  const isEmbed = createMemo(() => new URLSearchParams(location.search).get("embed") === "1")
+  //
+  // Detection: either the explicit `?embed=1` query param OR an iframe sniff
+  // (window.top !== window.self). The iframe sniff is the robust signal —
+  // it survives in-app navigations that drop the query string, and works in
+  // both same-origin and cross-origin iframe contexts. URL param remains
+  // useful for manual dev testing without a parent frame.
+  const inIframe = typeof window !== "undefined" && window.top !== window.self
+  const isEmbed = createMemo(
+    () => inIframe || new URLSearchParams(location.search).get("embed") === "1",
+  )
 
   return (
     <Show
